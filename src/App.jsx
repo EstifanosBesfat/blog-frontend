@@ -72,7 +72,8 @@ function App() {
       alert("Post Created!")
     } catch (err) {
       console.error(err)
-      alert("Failed to create post. Session might be expired.")
+      const errorMessage = err.response?.data?.error || "Failed to create post";
+      alert(errorMessage);
     }
   }
 
