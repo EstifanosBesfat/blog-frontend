@@ -127,10 +127,44 @@ function App() {
       <h2>Recent Posts</h2>
       <div style={{ display: 'grid', gap: '15px' }}>
         {posts.map(post => (
-          <div key={post.id} style={{ border: '1px solid #eee', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
+          <div key={post.id} style={{ border: '1px solid #eee', padding: '20px', borderRadius: '8px', position: 'relative' }}>
+            
+            {/* STATUS BADGE */}
+            <span style={{ 
+              position: 'absolute', top: '10px', right: '10px', 
+              background: post.status === 'published' ? '#d4edda' : '#fff3cd',
+              color: post.status === 'published' ? '#155724' : '#856404',
+              padding: '4px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 'bold'
+            }}>
+              {post.status || 'draft'}
+            </span>
+
             <h3 style={{ marginTop: 0 }}>{post.title}</h3>
             <p style={{ color: '#555' }}>{post.content}</p>
             <small style={{ color: '#888' }}>By: {post.username}</small>
+
+            {/* PUBLISH BUTTON (Only if Draft + Logged In) */}
+            {token && post.status !== 'published' && (
+              <button 
+                onClick={async () => {
+                  try {
+                    await axios.put(
+                      `${API_URL}/posts/${post.id}/publish`, 
+                      {}, 
+                      { headers: { Authorization: `Bearer ${token}` } }
+                    )
+                    alert("Post Published!")
+                    fetchPosts() // Refresh list to see change
+                  } catch (err) {
+                    alert("Failed to publish (Are you the owner?)")
+                  }
+                }}
+                style={{ display: 'block', marginTop: '10px', background: '#28a745', color: 'white', border: 'none', padding: '5px 10px', borderRadius: '4px', cursor: 'pointer' }}
+              >
+                🚀 Publish Now
+              </button>
+            )}
+
           </div>
         ))}
       </div>
