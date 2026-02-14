@@ -167,6 +167,23 @@ function App() {
               </button>
             )}
 
+            <button
+              onClick={async () => {
+                const proced = window.confirm("Are you sure you want to delete?");
+                if (!proced) return;
+                try {
+                  await axios.delete(
+                    `${API_URL}/posts/${post.id}`,
+                    { headers: { Authorization: `Bearer ${token}` } }
+                  );
+                  alert('Post deleted');
+                  fetchPosts();
+                } catch (error) {
+                  alert('Failed to delete post');
+                }
+              }}
+            >delete</button>
+
           </div>
         ))}
       </div>
