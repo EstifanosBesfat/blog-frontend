@@ -1,16 +1,60 @@
-# React + Vite
+# 🎨 React Blog Frontend (Full Stack Capstone)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern, responsive blogging interface built with **React (Vite)**. This project serves as the frontend client for a custom **Node.js/PostgreSQL Backend**.
 
-Currently, two official plugins are available:
+It features a polished **Glassmorphism UI**, robust authentication handling, and optimized UX for serverless backends (handling cold starts gracefully).
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+---
 
-## React Compiler
+## 🔗 Live Demo & Backend
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+| Service | Status | Link |
+| :--- | :--- | :--- |
+| **Live Frontend** | 🟢 Online | [**Visit the Blog (Vercel)**](https://blog-frontend-nine-woad.vercel.app) |
+| **Backend API** | ⚙️ Repo | [View Backend Code](https://github.com/estifanosbesfat/blog-api) |
+| **API Docs** | 📜 Swagger | [View API Documentation](https://blog-api-bnxm.onrender.com/api-docs) |
 
-## Expanding the ESLint configuration
+> **👀 Recruiter Demo Credentials:**
+> *   **Email:** `cloud@test.com`
+> *   **Password:** `secure123`
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+---
+
+## 🛠️ Tech Stack
+
+*   **Framework:** React 18 (Vite)
+*   **Styling:** Custom CSS (Glassmorphism Design System)
+*   **State Management:** React Hooks (`useState`, `useEffect`, `Context`)
+*   **Routing:** React Router DOM v6
+*   **HTTP Client:** Axios (with Interceptors)
+*   **Deployment:** Vercel
+
+---
+
+## ✨ Key Features
+
+*   **🔐 Secure Authentication:**
+    *   Full Login/Register flows.
+    *   JWT storage in `localStorage`.
+    *   **Axios Interceptors** automatically attach `Authorization: Bearer <token>` headers to outgoing requests.
+*   **🎨 Modern UI/UX:**
+    *   **Glassmorphism Design:** Translucent cards, soft shadows, and modern typography.
+    *   **Responsive:** Fully mobile-optimized Navbar and Grid layout.
+    *   **Cold Start Handling:** Custom UI banners detect when the free-tier backend is "waking up" to keep users informed.
+*   **⚡ Dynamic Data:**
+    *   Fetches real-time data from a PostgreSQL database.
+    *   Optimistic UI updates for Deleting/Creating posts.
+    *   Visual status badges (Draft vs Published).
+
+---
+
+## 📂 Project Structure
+
+```text
+src/
+ ├── components/     # Reusable UI parts (Navbar, PostCard, Forms)
+ ├── pages/          # Full screen views (Feed, Login, Register)
+ ├── services/       # API configuration & Axios setup
+ ├── App.jsx         # Main Router & Layout logic
+ ├── index.css       # Global Glassmorphism styles
+ └── main.jsx        # Entry point
