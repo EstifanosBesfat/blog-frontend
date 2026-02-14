@@ -1,194 +1,112 @@
-import { useState, useEffect } from 'react'
-import axios from 'axios'
+import { useState, useEffect } from 'react';
+import api from './services/api';
+import PostCard from './components/PostCard';
+import PostForm from './components/PostForm';
 
 function App() {
-  const [posts, setPosts] = useState([])
-  const [token, setToken] = useState(null)
+  const [posts, setPosts] = useState([]);
+  const [token, setToken] = useState(null);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   
-  // Login State
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
+  // NEW: Loading state to track the "Cold Start"
+  const [loading, setLoading] = useState(true);
 
-  // Create Post State
-  const [title, setTitle] = useState("")
-  const [content, setContent] = useState("")
-
-  // REPLACE WITH YOUR RENDER URL
-  const API_URL = 'https://blog-api-bnxm.onrender.com/api' 
-
-  // 1. Load Data & Token on Startup
   useEffect(() => {
-    const savedToken = localStorage.getItem('token')
-    if (savedToken) setToken(savedToken)
-    fetchPosts()
-  }, [])
+    const savedToken = localStorage.getItem('token');
+    if (savedToken) setToken(savedToken);
+    fetchPosts();
+  }, []);
 
   const fetchPosts = async () => {
+    setLoading(true); // Start loading
     try {
-      const response = await axios.get(`${API_URL}/posts`)
-      setPosts(response.data)
+      const response = await api.get('/posts');
+      setPosts(response.data);
     } catch (err) {
-      console.error("Error fetching posts:", err)
+      console.error("Error fetching posts:", err);
+    } finally {
+      setLoading(false); // Stop loading (success or fail)
     }
-  }
+  };
 
   const handleLogin = async (e) => {
-    e.preventDefault()
+    e.preventDefault();
     try {
-      const response = await axios.post(`${API_URL}/auth/login`, { email, password })
-      const newToken = response.data.token
-      localStorage.setItem('token', newToken)
-      setToken(newToken)
-      alert("Login Successful!")
+      const response = await api.post('/auth/login', { email, password });
+      const newToken = response.data.token;
+      localStorage.setItem('token', newToken);
+      setToken(newToken);
+      alert("Login Successful!");
     } catch (err) {
-      alert("Login Failed")
+      alert("Login Failed: " + (err.response?.data?.error || "Check credentials"));
     }
-  }
+  };
 
   const handleLogout = () => {
-    localStorage.removeItem('token')
-    setToken(null)
-  }
-
-  // --- NEW: CREATE POST FUNCTION ---
-  const handleCreatePost = async (e) => {
-    e.preventDefault()
-    if (!token) return alert("You must be logged in!")
-
-    try {
-      // 1. Send Request with Header
-      await axios.post(
-        `${API_URL}/posts`, 
-        { title, content }, 
-        { headers: { Authorization: `Bearer ${token}` } } // <--- THE KEY
-      )
-
-      // 2. Clear Form
-      setTitle("")
-      setContent("")
-      
-      // 3. Refresh List
-      fetchPosts()
-      alert("Post Created!")
-    } catch (err) {
-      console.error(err)
-      const errorMessage = err.response?.data?.error || "Failed to create post";
-      alert(errorMessage);
-    }
-  }
+    localStorage.removeItem('token');
+    setToken(null);
+    alert("Logged out");
+  };
 
   return (
-    <div style={{ padding: '20px', maxWidth: '800px', margin: '0 auto', fontFamily: 'system-ui' }}>
-      <h1>My Full Stack Blog</h1>
-
-      {/* --- AUTH SECTION --- */}
-      <div style={{ marginBottom: '30px', padding: '20px', border: '1px solid #ddd', borderRadius: '8px', background: '#f9f9f9' }}>
+    <div style={{ padding: '20px', maxWidth: '800px', margin: '0 auto', fontFamily: 'system-ui, sans-serif' }}>
+      
+      {/* HEADER */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px', borderBottom: '1px solid #eee', paddingBottom: '20px' }}>
+        <h1>🚀 My Blog</h1>
+        
         {!token ? (
           <form onSubmit={handleLogin} style={{ display: 'flex', gap: '10px' }}>
-            <input type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} required />
-            <input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} required />
-            <button type="submit">Log In</button>
+            <input type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} required style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }} />
+            <input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} required style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }} />
+            <button type="submit" style={{ background: '#28a745', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer' }}>Log In</button>
           </form>
         ) : (
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <h3 style={{ margin: 0, color: 'green' }}>✅ Logged In</h3>
-            <button onClick={handleLogout} style={{ background: '#ff4444', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer' }}>Log Out</button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+            <span style={{ color: 'green', fontWeight: 'bold' }}>✅ Logged In</span>
+            <button onClick={handleLogout} style={{ background: '#6c757d', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer' }}>Log Out</button>
           </div>
         )}
       </div>
 
-      {/* --- NEW: CREATE POST FORM (Only if logged in) --- */}
-      {token && (
-        <div style={{ marginBottom: '30px', padding: '20px', border: '1px solid #ddd', borderRadius: '8px' }}>
-          <h3>✍️ Write a New Post</h3>
-          <form onSubmit={handleCreatePost} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            <input 
-              type="text" 
-              placeholder="Title" 
-              value={title} 
-              onChange={e => setTitle(e.target.value)} 
-              required 
-              style={{ padding: '8px', fontSize: '16px' }}
-            />
-            <textarea 
-              placeholder="Content" 
-              value={content} 
-              onChange={e => setContent(e.target.value)} 
-              required 
-              style={{ padding: '8px', fontSize: '16px', height: '100px' }}
-            />
-            <button type="submit" style={{ padding: '10px', background: '#007bff', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
-              Publish Post
-            </button>
-          </form>
+      {/* --- COLD START WARNING (Only shows while loading) --- */}
+      {loading && (
+        <div style={{ 
+          backgroundColor: '#fff3cd', 
+          color: '#856404', 
+          padding: '15px', 
+          borderRadius: '8px', 
+          border: '1px solid #ffeeba',
+          marginBottom: '20px',
+          textAlign: 'center'
+        }}>
+          <strong>⏳ Waking up the server...</strong> <br/>
+          Since I am using the free tier of Render, this might take 30-60 seconds. <br/>
+          Please wait while the database spins up!
         </div>
       )}
 
-      {/* --- POST LIST --- */}
-      <h2>Recent Posts</h2>
+      {/* CREATE POST FORM */}
+      {token && <PostForm onPostCreated={fetchPosts} />}
+
+      {/* POST LIST */}
+      <h2 style={{ borderBottom: '2px solid #007bff', paddingBottom: '10px', display: 'inline-block' }}>Recent Posts</h2>
+      
       <div style={{ display: 'grid', gap: '15px' }}>
+        {!loading && posts.length === 0 && <p>No posts yet.</p>}
+        
         {posts.map(post => (
-          <div key={post.id} style={{ border: '1px solid #eee', padding: '20px', borderRadius: '8px', position: 'relative' }}>
-            
-            {/* STATUS BADGE */}
-            <span style={{ 
-              position: 'absolute', top: '10px', right: '10px', 
-              background: post.status === 'published' ? '#d4edda' : '#fff3cd',
-              color: post.status === 'published' ? '#155724' : '#856404',
-              padding: '4px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 'bold'
-            }}>
-              {post.status || 'draft'}
-            </span>
-
-            <h3 style={{ marginTop: 0 }}>{post.title}</h3>
-            <p style={{ color: '#555' }}>{post.content}</p>
-            <small style={{ color: '#888' }}>By: {post.username}</small> <br />
-            <small style={{ color: '#888' }}>{post.comment_count}💬 comments</small>
-
-            {/* PUBLISH BUTTON (Only if Draft + Logged In) */}
-            {token && post.status !== 'published' && (
-              <button 
-                onClick={async () => {
-                  try {
-                    await axios.put(
-                      `${API_URL}/posts/${post.id}/publish`, 
-                      {}, 
-                      { headers: { Authorization: `Bearer ${token}` } }
-                    )
-                    alert("Post Published!")
-                    fetchPosts() // Refresh list to see change
-                  } catch (err) {
-                    alert("Failed to publish (Are you the owner?)")
-                  }
-                }}
-                style={{ display: 'block', marginTop: '10px', background: '#28a745', color: 'white', border: 'none', padding: '5px 10px', borderRadius: '4px', cursor: 'pointer' }}
-              >
-                🚀 Publish Now
-              </button>
-            )}
-
-            <button
-              onClick={async () => {
-                const proced = window.confirm("Are you sure you want to delete?");
-                if (!proced) return;
-                try {
-                  await axios.delete(
-                    `${API_URL}/posts/${post.id}`,
-                    { headers: { Authorization: `Bearer ${token}` } }
-                  );
-                  alert('Post deleted');
-                  fetchPosts();
-                } catch (error) {
-                  alert('Failed to delete post');
-                }
-              }}
-            >delete</button>
-
-          </div>
+          <PostCard 
+            key={post.id} 
+            post={post} 
+            refreshPosts={fetchPosts} 
+            isLoggedIn={!!token} 
+          />
         ))}
       </div>
     </div>
-  )
+  );
 }
 
-export default App
+export default App;
