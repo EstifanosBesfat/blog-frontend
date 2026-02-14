@@ -142,7 +142,8 @@ function App() {
 
             <h3 style={{ marginTop: 0 }}>{post.title}</h3>
             <p style={{ color: '#555' }}>{post.content}</p>
-            <small style={{ color: '#888' }}>By: {post.username}</small>
+            <small style={{ color: '#888' }}>By: {post.username}</small> <br />
+            <small style={{ color: '#888' }}>{post.comment_count}💬 comments</small>
 
             {/* PUBLISH BUTTON (Only if Draft + Logged In) */}
             {token && post.status !== 'published' && (
