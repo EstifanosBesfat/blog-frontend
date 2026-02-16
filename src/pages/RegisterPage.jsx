@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../services/api';
+import toast from 'react-hot-toast';
 
 const RegisterPage = () => {
   const [formData, setFormData] = useState({ username: '', email: '', password: '' });
@@ -9,12 +10,13 @@ const RegisterPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
     try {
-      await api.post('/auth/register', formData);
-      alert("Registration Successful! Please Log In.");
+      const { data } = await api.post('/auth/register', formData);
+      toast.success(data.message || 'Registration successful. Please log in.');
       navigate('/login');
     } catch (err) {
-      setError(err.response?.data?.error || "Registration failed");
+      setError(err.response?.data?.error || err.response?.data?.message || 'Registration failed');
     }
   };
 
