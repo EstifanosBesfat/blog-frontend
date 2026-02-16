@@ -1,81 +1,90 @@
-import api from '../services/api';
+import api from "../services/api";
+import toast from "react-hot-toast";
 
-const PostCard = ({ post, refreshPosts, isLoggedIn }) => {
-  
-  // LOGIC: Delete Post
+const PostCard = ({ post, refreshPosts, currentUser, isLoggedIn }) => {
+  const isOwnerById = !!(post.user_id && currentUser?.id === post.user_id);
+  const isOwnerByUsername = !!(
+    post.username &&
+    currentUser?.username &&
+    post.username.toLowerCase() === currentUser.username.toLowerCase()
+  );
+  const canManagePost = isLoggedIn && (isOwnerById || isOwnerByUsername);
+  const commentCount = Number(post.comment_count || 0);
+
   const handleDelete = async () => {
-    if (!window.confirm("Are you sure you want to delete?")) return;
+    if (!window.confirm("Are you sure you want to delete this post?")) return;
+
     try {
       await api.delete(`/posts/${post.id}`);
-      alert('Post deleted');
-      refreshPosts(); // Reload list
-    } catch (err) {
-      alert(err.response?.data?.error || 'Failed to delete post');
-    }
-  };
-
-  // LOGIC: Publish Post
-  const handlePublish = async () => {
-    try {
-      // Assuming your backend has a PUT route for this, or we use update
-      // If you don't have a specific /publish route, we can just update the status
-      await api.put(`/posts/${post.id}`, { status: 'published' });
-      alert("Post Published!");
+      toast.success("Post deleted");
       refreshPosts();
     } catch (err) {
-      alert("Failed to publish (Are you the owner?)");
+      toast.error(err.response?.data?.error || err.response?.data?.message || "Failed to delete post");
     }
   };
 
-  // STYLES
-  const cardStyle = {
-    border: '1px solid #eee', padding: '20px', borderRadius: '8px', 
-    position: 'relative', marginBottom: '15px', background: 'white',
-    boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
-  };
-
-  const badgeStyle = {
-    position: 'absolute', top: '10px', right: '10px',
-    background: post.status === 'published' ? '#d4edda' : '#fff3cd',
-    color: post.status === 'published' ? '#155724' : '#856404',
-    padding: '4px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 'bold'
+  const handlePublish = async () => {
+    try {
+      await api.put(`/posts/${post.id}/publish`);
+      toast.success("Post published");
+      refreshPosts();
+    } catch (err) {
+      toast.error(err.response?.data?.error || err.response?.data?.message || "Failed to publish post");
+    }
   };
 
   return (
-    <div style={cardStyle}>
-      {/* STATUS BADGE */}
-      <span style={badgeStyle}>{post.status || 'draft'}</span>
-
-      <h3 style={{ marginTop: 0 }}>{post.title}</h3>
-      <p style={{ color: '#555', lineHeight: '1.6' }}>{post.content}</p>
-      
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '15px' }}>
-        <small style={{ color: '#888' }}>By: {post.username}</small>
-        <small style={{ color: '#888' }}>{post.comment_count || 0} 💬 comments</small>
+    <div className="card" style={{ position: "relative" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "10px" }}>
+        <span
+          className="status-badge"
+          style={{
+            background: post.status === "published" ? "#dcfce7" : "#fef9c3",
+            color: post.status === "published" ? "#166534" : "#854d0e",
+          }}
+        >
+          {post.status || "draft"}
+        </span>
       </div>
 
-      {/* ACTIONS (Only if logged in) */}
-      {isLoggedIn && (
-        <div style={{ marginTop: '15px', display: 'flex', gap: '10px' }}>
-          
-          {/* PUBLISH BUTTON (Only show if draft) */}
-          {post.status !== 'published' && (
-            <button 
-              onClick={handlePublish}
-              style={{ background: '#28a745', color: 'white', border: 'none', padding: '8px 12px', borderRadius: '4px', cursor: 'pointer' }}
-            >
-              🚀 Publish
-            </button>
-          )}
+      <h3 style={{ margin: "0 0 10px 0" }}>{post.title}</h3>
+      <p style={{ color: "#475569", lineHeight: "1.6" }}>{post.content}</p>
 
-          <button
-            onClick={handleDelete}
-            style={{ background: '#dc3545', color: 'white', border: 'none', padding: '8px 12px', borderRadius: '4px', cursor: 'pointer' }}
-          >
-            🗑️ Delete
-          </button>
-        </div>
-      )}
+      <div
+        style={{
+          marginTop: "15px",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
+        <small style={{ color: "#94a3b8" }}>
+          By: {post.username} | Comments: {commentCount}
+        </small>
+
+        {canManagePost && (
+          <div style={{ display: "flex", gap: "10px" }}>
+            {post.status !== "published" && (
+              <button
+                onClick={handlePublish}
+                style={{
+                  background: "#22c55e",
+                  color: "white",
+                  border: "none",
+                  padding: "6px 12px",
+                  borderRadius: "6px",
+                  fontSize: "14px",
+                }}
+              >
+                Publish
+              </button>
+            )}
+            <button onClick={handleDelete} className="btn-danger">
+              Delete
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
