@@ -5,25 +5,37 @@ import FeedPage from "./pages/FeedPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import { Toaster } from "react-hot-toast";
-import { clearAuthSession, getAuthToken } from "./services/auth";
+import { clearAuthSession, getAuthToken, getCurrentUser } from "./services/auth";
 
 function App() {
   const [token, setToken] = useState(getAuthToken());
+  const [currentUser, setCurrentUser] = useState(getCurrentUser());
 
   // Helper to handle login state update
-  const handleLoginSuccess = (newToken) => {
-    setToken(newToken);
+  const handleLoginSuccess = (session) => {
+    setToken(session?.token || null);
+    setCurrentUser(getCurrentUser());
+  };
+
+  const handleUserUpdate = (updatedUser) => {
+    setCurrentUser(updatedUser);
   };
 
   const handleLogout = () => {
     clearAuthSession();
     setToken(null);
+    setCurrentUser(null);
   };
 
   return (
     <BrowserRouter>
       <Toaster position="top-right" />
-      <Navbar isLoggedIn={!!token} onLogout={handleLogout} />
+      <Navbar
+        isLoggedIn={!!token}
+        onLogout={handleLogout}
+        currentUser={currentUser}
+        onUserUpdated={handleUserUpdate}
+      />
 
       <Routes>
         <Route path="/" element={<FeedPage isLoggedIn={!!token} />} />

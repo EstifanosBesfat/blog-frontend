@@ -17,7 +17,7 @@ const LoginPage = ({ onLogin }) => {
     try {
       const { data } = await api.post("/auth/login", { email, password });
       saveAuthSession({ token: data.token, user: data.user });
-      onLogin(data.token);
+      onLogin({ token: data.token, user: data.user });
       toast.success(data.message || "Logged in successfully");
       navigate("/");
     } catch (err) {

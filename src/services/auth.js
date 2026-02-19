@@ -36,6 +36,18 @@ export const clearAuthSession = () => {
 
 export const getAuthToken = () => localStorage.getItem(TOKEN_KEY);
 
+export const getStoredUser = () => {
+  const storedUserRaw = localStorage.getItem(USER_KEY);
+  return storedUserRaw ? JSON.parse(storedUserRaw) : null;
+};
+
+export const updateStoredUser = (updates) => {
+  const current = getStoredUser() || {};
+  const nextUser = { ...current, ...updates };
+  localStorage.setItem(USER_KEY, JSON.stringify(nextUser));
+  return nextUser;
+};
+
 export const getCurrentUser = () => {
   const token = getAuthToken();
   if (!token) return null;
@@ -43,8 +55,7 @@ export const getCurrentUser = () => {
   const tokenPayload = decodeTokenPayload(token);
   if (!tokenPayload) return null;
 
-  const storedUserRaw = localStorage.getItem(USER_KEY);
-  const storedUser = storedUserRaw ? JSON.parse(storedUserRaw) : null;
+  const storedUser = getStoredUser();
 
   return {
     ...tokenPayload,
